@@ -1,20 +1,32 @@
 import React, { useState, useCallback } from "react";
-import { View, TextInput, TouchableOpacity, Text, StyleSheet, Image } from "react-native";
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, Image, Alert } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import { ref, push } from "firebase/database";
+import { ref, set, get, remove } from "firebase/database";
 import { database, auth } from "../config";
 
 export default function Add() {
   const [nom, setNom] = useState("");
   const [prenom, setPrenom] = useState("");
   const [numero, setNumero] = useState("");
-
-  // Réinitialisation automatique du formulaire
   useFocusEffect(
     useCallback(() => {
-      setNom("");
-      setPrenom("");
-      setNumero("");
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const userRef = ref(database, "profils/" + user.uid);
+
+      get(userRef).then((snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          setNom(data.nom || "");
+          setPrenom(data.prenom || "");
+          setNumero(data.numero || "");
+        } else {
+          setNom("");
+          setPrenom("");
+          setNumero("");
+        }
+      });
     }, [])
   );
 
@@ -26,19 +38,42 @@ export default function Add() {
         return;
       }
 
-      // Référence vers "profils/profileId"
-      const profilsRef = ref(database, "profils"); 
-      await push(profilsRef, {
-        uid: user.uid,  // ID de l'utilisateur
+      const userRef = ref(database, "profils/" + user.uid);
+
+      await set(userRef, {
         nom,
         prenom,
         numero,
+        uid: user.uid,
       });
 
       alert("Profil enregistré !");
     } catch (error) {
       alert(error.message);
     }
+  };
+
+  const handleDeleteAccount = async () => {
+    Alert.alert(
+      "Supprimer votre compte",
+      "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.",
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Supprimer",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const user = auth.currentUser;
+              await remove(ref(database, "profils/" + user.uid));
+              alert("Compte supprimé avec succès !");
+            } catch (error) {
+              alert(error.message);
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -74,7 +109,11 @@ export default function Add() {
       />
 
       <TouchableOpacity style={styles.button} onPress={handleSave}>
-        <Text style={styles.buttonText}>Save</Text>
+        <Text style={styles.buttonText}>Sauvegarder</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={[styles.button, { backgroundColor: "red", marginTop: 15 }]} onPress={handleDeleteAccount}>
+        <Text style={styles.buttonText}>Supprimer mon compte</Text>
       </TouchableOpacity>
     </View>
   );

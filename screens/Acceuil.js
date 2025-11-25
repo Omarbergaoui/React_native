@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import Add from "./Add";
 import List from "./List";
+import Groupe from "./Groupe";
 
 const Tab = createBottomTabNavigator();
 
@@ -33,15 +34,17 @@ export default function Acceuil() {
         tabBarIcon: ({ color, size }) => {
           let iconName;
 
-          if (route.name === "Add") iconName = "add-circle";
+          if (route.name === "Profile") iconName = "person";
           else if (route.name === "List") iconName = "list";
+          else if (route.name === "Group") iconName="people";
 
           return <Ionicons name={iconName} size={26} color={color} />;
         },
       })}
     >
       <Tab.Screen name="List" component={List} />
-      <Tab.Screen name="Add" component={Add} />
+      <Tab.Screen name="Group" component={Groupe}/>
+      <Tab.Screen name="Profile" component={Add} />
     </Tab.Navigator>
   );
 }
