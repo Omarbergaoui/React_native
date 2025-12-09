@@ -45,6 +45,8 @@ export default function Add() {
         prenom,
         numero,
         uid: user.uid,
+        status: "online",      
+        lastseen: Date.now(),
       });
 
       alert("Profil enregistré !");

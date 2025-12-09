@@ -18,14 +18,15 @@ export default function SignIn({ navigation }) {
   const [password, setPassword] = useState("");
 
   const handleSignIn = async () => {
-    try {
-      navigation.replace("Acceuil");
-      await signInWithEmailAndPassword(auth, email, password);
-      alert("Logged in successfully!");
-    } catch (error) {
-      alert(error.message);
-    }
-  };
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    alert("Logged in successfully!");
+    navigation.replace("Acceuil");
+  } catch (error) {
+    alert(error.message); 
+  }
+};
+
 
   return (
     <ImageBackground
